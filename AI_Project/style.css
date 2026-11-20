@@ -1,0 +1,329 @@
+/* ---------- Theme ---------- */
+:root {
+  /* Page */
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --text-muted: #64748b;
+
+  /* Board */
+  --square-light: #ddd6ff;
+  --square-dark: #2f0d68;
+
+  /* Pieces */
+  --piece-dark: #a684ff;
+  --piece-light: #e2e8f0;
+  --king-ring: #fff085;
+
+  /* Interaction */
+  --highlight: #74d4ff;
+
+  /* Sizing: the board fits the screen's width and height, up to 560px. */
+  --board-size: min(92vw, calc(100vh - 11rem), 560px);
+  --square-size: calc(var(--board-size) / 8);
+  --radius: 10px;
+
+  /* Motion */
+  --move-time: 220ms;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Layout ---------- */
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Turn indicator: a pill with a dot in the current player's color. */
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.turn-dot {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  transition: background-color var(--move-time) ease;
+}
+
+.turn-dot.dark {
+  background: var(--piece-dark);
+}
+
+.turn-dot.light {
+  background: var(--piece-light);
+  box-shadow: inset 0 0 0 1px #cbd5e1;
+}
+
+/* ---------- Board ---------- */
+.board-wrap {
+  position: relative;
+}
+
+.board {
+  width: var(--board-size);
+  height: var(--board-size);
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.square {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.square.light {
+  background: var(--square-light);
+}
+
+.square.dark {
+  background: var(--square-dark);
+}
+
+/* Legal destination: a dot in the middle of the square. */
+.square.target {
+  cursor: pointer;
+}
+
+.square.target::after {
+  content: "";
+  width: 28%;
+  height: 28%;
+  border-radius: 50%;
+  background: var(--highlight);
+  opacity: 0.85;
+  transition: transform 120ms ease;
+}
+
+.square.target:hover::after {
+  transform: scale(1.3);
+}
+
+/* ---------- Pieces ---------- */
+.piece {
+  width: 78%;
+  height: 78%;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.piece.dark {
+  background: var(--piece-dark);
+}
+
+.piece.light {
+  background: var(--piece-light);
+}
+
+/* Pieces the current player can move: pointer cursor and a slight lift on hover. */
+.piece.movable {
+  cursor: pointer;
+}
+
+.piece.movable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.35);
+}
+
+/* Selected piece: a colored outline around it. */
+.piece.selected {
+  outline: 3px solid var(--highlight);
+  outline-offset: 3px;
+}
+
+/* King marker: a gold ring inside the piece plus a crown in the center. */
+.piece.king {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 4px var(--king-ring), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.piece.king.movable:hover {
+  box-shadow: inset 0 0 0 4px var(--king-ring), 0 5px 10px rgba(0, 0, 0, 0.35);
+}
+
+.piece.king::after {
+  content: "♛";
+  color: var(--king-ring);
+  font-size: calc(var(--square-size) * 0.4);
+  line-height: 1;
+}
+
+/* ---------- Animations ---------- */
+/* The piece that just moved slides from its old square to its new one.
+   --from-x / --from-y are set in script.js as square offsets (e.g. -1, 2). */
+.piece.moving {
+  position: relative;
+  z-index: 1;
+  animation: slide-in var(--move-time) ease-out;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translate(
+      calc(var(--from-x) * var(--square-size)),
+      calc(var(--from-y) * var(--square-size))
+    );
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+/* A captured piece shrinks and fades out on its square. */
+.piece.captured {
+  position: absolute;
+  pointer-events: none;
+  animation: fade-out var(--move-time) ease-in forwards;
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+/* The game-over card fades in. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- Game over ---------- */
+.game-over {
+  position: absolute;
+  inset: 0;
+  z-index: 2; /* above the moving piece (z-index 1) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  background: rgba(15, 23, 42, 0.55);
+  animation: fade-in 250ms ease-out;
+}
+
+.game-over[hidden] {
+  display: none;
+}
+
+.game-over-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 2.5rem;
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.winner-text {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.btn {
+  padding: 0.6rem 1.4rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--surface);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.btn:hover {
+  background: #334155;
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--highlight);
+  outline-offset: 2px;
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 480px) {
+  .game {
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .piece.selected {
+    outline-width: 2px;
+    outline-offset: 2px;
+  }
+
+  .game-over-card {
+    padding: 1.25rem 1.75rem;
+  }
+
+  .winner-text {
+    font-size: 1.35rem;
+  }
+}
+
+/* Respect the system "reduce motion" setting. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .piece.captured {
+    display: none;
+  }
+}

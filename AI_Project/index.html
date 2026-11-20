@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkers</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game">
+    <h1 class="title">Checkers</h1>
+    <p class="status" aria-live="polite">
+      <span id="turn-dot" class="turn-dot dark" aria-hidden="true"></span>
+      <span id="status">Purple's turn</span>
+    </p>
+    <div class="board-wrap">
+      <div id="board" class="board" aria-label="Checkers board"></div>
+      <div id="game-over" class="game-over" hidden>
+        <div class="game-over-card">
+          <p id="winner-text" class="winner-text"></p>
+          <button id="new-game" class="btn" type="button">New Game</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
